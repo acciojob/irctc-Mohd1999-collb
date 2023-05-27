@@ -1,6 +1,5 @@
 package com.driver.services;
 
-
 import com.driver.EntryDto.BookTicketEntryDto;
 import com.driver.model.Passenger;
 import com.driver.model.Ticket;
@@ -26,23 +25,93 @@ public class TicketService {
     @Autowired
     PassengerRepository passengerRepository;
 
-
     public Integer bookTicket(BookTicketEntryDto bookTicketEntryDto)throws Exception{
 
         //Check for validity
         //Use bookedTickets List from the TrainRepository to get bookings done against that train
         // Incase the there are insufficient tickets
         // throw new Exception("Less tickets are available");
+
         //otherwise book the ticket, calculate the price and other details
         //Save the information in corresponding DB Tables
         //Fare System : Check problem statement
+
         //Incase the train doesn't pass through the requested stations
         //throw new Exception("Invalid stations");
+
         //Save the bookedTickets in the train Object
         //Also in the passenger Entity change the attribute bookedTickets by using the attribute bookingPersonId.
        //And the end return the ticketId that has come from db
 
-       return null;
+         //Throw exception less tickets are available
+         Train train = trainRepository.findById(bookTicketEntryDto.getTrainId()).get();
+         int noOfAvailableTickets = train.getNoOfSeats() - train.getBookedTickets().size();
+         if (noOfAvailableTickets < bookTicketEntryDto.getNoOfSeats()){
+             throw new Exception("Less tickets are available");
+         }
+ 
+ 
+         //Throw exception Invalid stations
+         String routeStr = train.getRoute();
+         String[] routeStrArr = routeStr.split(",");
+ 
+         boolean doesFromStationExists = false, doesToStationExists = false;
+ 
+         int indexOfFromStation = -1, indexOfToStation = -1;
+ 
+         String fromStation = bookTicketEntryDto.getFromStation().toString();
+ 
+         String toStation = bookTicketEntryDto.getToStation().toString();
+ 
+ 
+         for (int i = 0;i<routeStrArr.length;i++){
+             String currStation = routeStrArr[i];
+             if (currStation.equals(fromStation)){
+                 doesFromStationExists = true;
+                 indexOfFromStation = i;
+             }
+ 
+             if (currStation.equals(toStation)){
+                 doesToStationExists = true;
+                 indexOfToStation = i;
+             }
+         }
+ 
+         if (doesFromStationExists == false || doesToStationExists == false || indexOfFromStation>indexOfToStation){
+             throw new Exception("Invalid stations");
+         }
+ 
+ 
+         /*Calculate the fare*/ 
+         int totalFare = (indexOfToStation - indexOfFromStation) * 300;
 
+         Ticket ticket = new Ticket();
+         List<Passenger> passengerList = new ArrayList<>();
+
+    
+        for (int passengerId : bookTicketEntryDto.getPassengerIds()){
+             passengerList.add(passengerRepository.findById(passengerId).get());
+         }
+
+         ticket.setPassengersList(passengerList); // Update the passenger list
+         ticket.setTrain(train);
+         ticket.setToStation(bookTicketEntryDto.getToStation());
+         ticket.setFromStation(bookTicketEntryDto.getFromStation());
+         ticket.setTotalFare(totalFare);
+ 
+ 
+         /*Saved into database*/
+         Ticket savedTicket = ticketRepository.save(ticket);
+ 
+         List<Ticket> bookedTicketsTrain = train.getBookedTickets();
+         bookedTicketsTrain.add(savedTicket);
+ 
+         trainRepository.save(train); // Saved train 
+ 
+         Passenger passenger = passengerRepository.findById(bookTicketEntryDto.getBookingPersonId()).get();
+         List<Ticket> bookedTicketsPassenger = passenger.getBookedTickets();
+         bookedTicketsPassenger.add(ticket);
+         passengerRepository.save(passenger); // Saved passenger 
+         return savedTicket.getTicketId();
     }
 }

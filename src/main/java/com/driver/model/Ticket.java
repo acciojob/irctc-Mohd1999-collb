@@ -91,5 +91,4 @@ public class Ticket {
     public void setTrain(Train train) {
         this.train = train;
     }
-
 }
