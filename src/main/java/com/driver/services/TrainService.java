@@ -44,7 +44,6 @@ public class TrainService {
     }
 
     public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto){
-
         //Calculate the total seats available
         //Suppose the route is A B C D
         //And there are 2 seats avaialble in total in the train
@@ -79,19 +78,14 @@ public class TrainService {
             String toStation = ticket.getToStation().toString();
 
             if (map.get(seatAvailabilityEntryDto.getToStation().toString()) <= map.get(fromStation) || 
-            map.get(seatAvailabilityEntryDto.getFromStation().toString()) >= map.get(toStation)){
+                map.get(seatAvailabilityEntryDto.getFromStation().toString()) >= map.get(toStation)){
                 count++;
             }
-            // else if (map.get(seatAvailabilityEntryDto.getFromStation().toString()) >= map.get(toStation)){
-            //     count++;
-            // }
         }
-
        return count+2;
     }
 
     public Integer calculatePeopleBoardingAtAStation(Integer trainId,Station station) throws Exception{
-
         //We need to find out the number of people who will be boarding a train from a particular station
         //if the trainId is not passing through that station
         //throw new Exception("Train is not passing from this station");
@@ -125,7 +119,6 @@ public class TrainService {
     }
 
     public Integer calculateOldestPersonTravelling(Integer trainId){
-
         //Throughout the journey of the train between any 2 stations
         //We need to find out the age of the oldest person that is travelling the train
         //If there are no people travelling in that train you can return 0
@@ -165,30 +158,13 @@ public class TrainService {
                     stationIndex = i;
                     LocalTime trainTime = train.getDepartureTime().plusHours(i);
                     if ((trainTime.compareTo(startTime) == 1) && trainTime.compareTo(endTime) == -1 || 
-                    (trainTime.compareTo(startTime) == 0) || (trainTime.compareTo(endTime) == 0)){
+                        (trainTime.compareTo(startTime) == 0) || (trainTime.compareTo(endTime) == 0)){
                         trainsBetweenTime.add(train.getTrainId());
                     }
-                    // else if ((trainTime.compareTo(startTime) == 0) || (trainTime.compareTo(endTime) == 0)){
-                    //     trainsBetweenTime.add(train.getTrainId());
-                    // }
                 }
 
             }
         }
         return trainsBetweenTime;
     }
-
-    private int convertTimeToInt(LocalTime time){
-        int timeToReturn = 0;
-        if (!time.equals(null)){
-            String timeStr = time.toString();
-            String[] timeStrArr = timeStr.split(":");
-
-            timeToReturn = Integer.parseInt(timeStrArr[0]) * 60 + Integer.parseInt(timeStrArr[1]);
-
-
-        }
-        return timeToReturn;
-    }
-
 }
